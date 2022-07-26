@@ -4,6 +4,7 @@ package com.spring.security.config;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -21,7 +22,8 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class SecurityConfig{
 
-    private static final String [] WHITE_LIST = {"/login","/register","/verifyRegistration"};
+    private static final String [] WHITE_LIST = {"/login","/register","/verifyRegistration",
+            "/resendVerificationToken","/resetPassword","/savePassword","/changePassword"};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -29,10 +31,11 @@ public class SecurityConfig{
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers(WHITE_LIST).permitAll()
-                .anyRequest()
-                .authenticated()
+                .antMatchers("/api/**").authenticated()
                 .and()
-                .httpBasic();
+                .oauth2Login(oauth2Login ->oauth2Login.loginPage("/oauth2/authorization/api-client-oidc"))
+                .oauth2Client(Customizer.withDefaults());
+
         return httpSecurity.build();
 
     }
